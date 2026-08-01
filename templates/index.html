@@ -2,489 +2,457 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Limitless Studio - Private Writing Platform</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limitless Studio | Ultimate Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;1,400&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <style>
+        /* THEME CONFIGURATIONS */
         :root {
-            --bg-deep: #0b0914;
-            --bg-sidebar: #131022;
-            --bg-card: rgba(26, 21, 45, 0.8);
-            --gold: #f39c12;
-            --gold-hover: #f1c40f;
-            --text-main: #f5f6fa;
-            --text-muted: #a5b1c2;
-            --border-gold: rgba(243, 156, 18, 0.3);
+            --bg-deep: #0a0a0c;
+            --bg-panel: #13131a;
+            --bg-card: #1c1c24;
+            --border-color: #2a2a38;
+            --accent: #d4af37;
+            --accent-glow: rgba(212, 175, 55, 0.25);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --font-main: 'Inter', sans-serif;
+            --font-heading: 'Cinzel', serif;
+            --font-writer: 'Playfair Display', serif;
         }
 
+        [data-theme="cyberpunk"] {
+            --bg-deep: #05050a;
+            --bg-panel: #0d0d1a;
+            --bg-card: #16162b;
+            --border-color: #ff007f33;
+            --accent: #00f0ff;
+            --accent-glow: rgba(0, 240, 255, 0.3);
+            --text-main: #e0ffff;
+            --text-muted: #00bfff88;
+        }
+
+        [data-theme="emerald"] {
+            --bg-deep: #020a06;
+            --bg-panel: #06140e;
+            --bg-card: #0d2218;
+            --border-color: #10b98133;
+            --accent: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.25);
+            --text-main: #ecfdf5;
+            --text-muted: #6ee7b7;
+        }
+
+        [data-theme="ruby"] {
+            --bg-deep: #0a0204;
+            --bg-panel: #140609;
+            --bg-card: #220d12;
+            --border-color: #f43f5e33;
+            --accent: #f43f5e;
+            --accent-glow: rgba(244, 63, 94, 0.25);
+            --text-main: #fff1f2;
+            --text-muted: #fda4af;
+        }
+
+        [data-theme="midnight"] {
+            --bg-deep: #030712;
+            --bg-panel: #0f172a;
+            --bg-card: #1e293b;
+            --border-color: #38bdf833;
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.25);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Georgia', serif;
             background-color: var(--bg-deep);
             color: var(--text-main);
-            margin: 0; padding: 0;
-            height: 100vh; display: flex; flex-direction: column;
-            overflow: hidden; position: relative;
+            font-family: var(--font-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
-        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
 
-        /* Navigation Header */
+        /* LOCK SCREEN ANIMATION */
+        #lock-screen {
+            position: fixed; inset: 0;
+            background: var(--bg-deep);
+            z-index: 9999;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        #lock-screen.unlocked {
+            opacity: 0; visibility: hidden; pointer-events: none;
+        }
+        .biometric-scanner {
+            width: 110px; height: 110px; border-radius: 50%;
+            border: 2px dashed var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; position: relative;
+            box-shadow: 0 0 30px var(--accent-glow);
+            transition: transform 0.3s;
+        }
+        .biometric-scanner:hover { transform: scale(1.05); }
+        .biometric-scanner::after {
+            content: ''; position: absolute; inset: 6px; border-radius: 50%;
+            border: 2px solid var(--accent); opacity: 0.4;
+        }
+        .scanner-beam {
+            position: absolute; width: 100%; height: 3px; background: var(--accent);
+            box-shadow: 0 0 12px var(--accent);
+            animation: scanMove 2s infinite alternate ease-in-out;
+        }
+        @keyframes scanMove { 0% { top: 10px; } 100% { top: 95px; } }
+
+        /* APP HEADER */
         header {
-            background: rgba(11, 9, 20, 0.9);
-            backdrop-filter: blur(15px);
-            border-bottom: 1px solid var(--border-gold);
-            padding: 12px 30px;
-            display: flex; justify-content: space-between; align-items: center;
-            z-index: 100;
+            height: 60px; background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; z-index: 100;
         }
-        .logo { font-family: 'Cinzel', serif; font-size: 18px; font-weight: bold; color: var(--gold); letter-spacing: 2px; }
-        .nav-tabs { display: flex; gap: 8px; }
-        .nav-btn {
-            background: transparent; border: 1px solid transparent; color: var(--text-muted);
-            padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 13px; letter-spacing: 1px; transition: 0.2s; font-family: inherit;
+        .logo { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; color: var(--accent); letter-spacing: 2px; }
+        .header-controls { display: flex; align-items: center; gap: 15px; }
+        select, button {
+            background: var(--bg-card); color: var(--text-main);
+            border: 1px solid var(--border-color); padding: 6px 14px;
+            border-radius: 6px; font-size: 0.85rem; cursor: pointer;
+            transition: all 0.2s;
         }
-        .nav-btn.active, .nav-btn:hover { color: var(--gold); border-color: var(--border-gold); background: rgba(243, 156, 18, 0.08); }
+        button:hover, select:hover { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+        .btn-primary { background: var(--accent); color: #000; font-weight: 600; border: none; }
+        .btn-primary:hover { opacity: 0.9; }
+
+        /* MAIN WORKSPACE LAYOUT */
+        .app-workspace { display: flex; flex: 1; height: calc(100vh - 60px); overflow: hidden; }
         
-        .header-actions { display: flex; align-items: center; gap: 15px; }
-        .action-pill {
-            background: var(--gold); color: #000; border: none; padding: 6px 15px; font-weight: bold;
-            border-radius: 4px; cursor: pointer; transition: 0.2s; font-size: 12px; letter-spacing: 1px;
+        /* SIDEBAR */
+        sidebar {
+            width: 300px; background: var(--bg-panel);
+            border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column;
+            transition: transform 0.3s ease;
         }
-        .action-pill:hover { background: var(--gold-hover); box-shadow: 0 0 10px rgba(243, 156, 18, 0.5); }
-        .logout-btn { background: transparent; border: 1px solid #e74c3c; color: #e74c3c; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; }
-        .logout-btn:hover { background: #e74c3c; color: #fff; }
-        #status-msg { font-size: 12px; color: var(--gold); font-family: sans-serif; }
-
-        /* Workspaces */
-        .workspace { display: none; flex-grow: 1; height: calc(100vh - 55px); overflow: hidden; }
-        .workspace.active { display: flex; }
-
-        /* LIBRARY GRID VIEW */
-        .library-view { padding: 40px; width: 100%; overflow-y: auto; box-sizing: border-box; }
-        .library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; margin-top: 25px; }
-        .book-card {
-            background: var(--bg-card); border: 1px solid var(--border-gold); border-radius: 8px;
-            padding: 24px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; backdrop-filter: blur(10px);
-            display: flex; flex-direction: column; justify-content: space-between;
+        .sidebar-header { padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-tabs { display: flex; background: var(--bg-deep); border-bottom: 1px solid var(--border-color); }
+        .tab-btn { flex: 1; padding: 10px; background: none; border: none; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; cursor: pointer; }
+        .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); background: var(--bg-panel); }
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 15px; }
+        .item-card {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            padding: 12px; border-radius: 8px; margin-bottom: 10px; cursor: pointer;
+            transition: all 0.2s;
         }
-        .book-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.6), 0 0 12px var(--border-gold); }
-        .book-card h3 { margin: 0 0 8px 0; color: var(--gold); font-size: 18px; }
-        .book-card p { color: var(--text-muted); font-size: 13px; line-height: 1.5; margin: 0; }
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 10px; font-family: sans-serif; font-weight: bold; background: rgba(243,156,18,0.2); color: var(--gold); margin-bottom: 10px; }
+        .item-card:hover, .item-card.active { border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
 
-        /* SPLIT WORKSPACE */
-        .split-layout { display: flex; width: 100%; height: 100%; }
-        sidebar { width: 280px; background: var(--bg-sidebar); border-right: 1px solid var(--border-gold); display: flex; flex-direction: column; }
-        .sidebar-header {
-            padding: 16px; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--gold);
-            border-bottom: 1px solid var(--border-gold); display: flex; justify-content: space-between; align-items: center; font-family: sans-serif; font-weight: bold;
+        /* EDITOR AREA */
+        .editor-main { flex: 1; display: flex; flex-direction: column; background: var(--bg-deep); position: relative; }
+        .toolbar {
+            padding: 10px 20px; background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; gap: 15px; align-items: center;
         }
-        .gold-btn { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 4px 10px; border-radius: 3px; cursor: pointer; font-size: 11px; transition: 0.2s; }
-        .gold-btn:hover { background: var(--gold); color: #000; }
+        .canvas-area { flex: 1; padding: 40px; overflow-y: auto; display: flex; justify-content: center; }
+        .document-pad {
+            width: 100%; max-width: 850px; background: var(--bg-panel);
+            border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; gap: 20px;
+        }
+        input[type="text"], textarea {
+            background: var(--bg-deep); border: 1px solid var(--border-color);
+            color: var(--text-main); padding: 12px; border-radius: 6px;
+            font-family: var(--font-writer); font-size: 1rem; width: 100%;
+        }
+        input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+        textarea { flex: 1; min-height: 400px; resize: vertical; line-height: 1.8; }
+
+        /* FOCUS (TYPEWRITER) MODE */
+        body.focus-mode sidebar, body.focus-mode header, body.focus-mode .toolbar { display: none !important; }
+        body.focus-mode .app-workspace { height: 100vh; }
+        body.focus-mode .canvas-area { padding: 0; align-items: center; }
+        body.focus-mode .document-pad { max-width: 1000px; height: 100vh; border: none; border-radius: 0; background: var(--bg-deep); box-shadow: none; padding: 60px; }
+
+        /* MODALS (YARN BOARD & TIMELINE) */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            z-index: 1000; display: none; align-items: center; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            width: 90vw; height: 85vh; background: var(--bg-panel);
+            border: 1px solid var(--accent); border-radius: 12px;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 0 40px var(--accent-glow);
+        }
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { flex: 1; padding: 20px; overflow: auto; position: relative; }
         
-        .item-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
-        .list-item { padding: 14px 20px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; flex-direction: column; gap: 3px; transition: background 0.2s; }
-        .list-item:hover { background: rgba(243, 156, 18, 0.05); }
-        .list-item.active { background: rgba(243, 156, 18, 0.12); border-left: 3px solid var(--gold); }
-        .item-title { font-size: 14px; color: var(--text-main); font-weight: bold; }
+        /* DETECTIVE YARN CANVAS */
+        #yarn-canvas { width: 100%; height: 100%; position: relative; background: radial-gradient(circle, var(--bg-card) 10%, var(--bg-deep) 90%); }
+        .yarn-node {
+            position: absolute; width: 160px; background: var(--bg-card);
+            border: 2px solid var(--accent); border-radius: 8px; padding: 10px;
+            cursor: grab; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .yarn-node h4 { font-family: var(--font-heading); font-size: 0.9rem; color: var(--accent); margin-bottom: 5px; }
+        .yarn-node p { font-size: 0.75rem; color: var(--text-muted); }
 
-        /* EDITOR PANES */
-        .editor-pane { flex-grow: 1; padding: 40px; display: flex; flex-direction: column; background: rgba(15, 12, 27, 0.4); overflow-y: auto; box-sizing: border-box; }
-        .editor-pane input { font-size: 24px; background: transparent; border: none; border-bottom: 1px solid var(--border-gold); color: var(--gold); padding-bottom: 8px; margin-bottom: 20px; font-family: inherit; font-weight: bold; }
-        .editor-pane input:focus { outline: none; border-color: var(--gold-hover); }
-        textarea { width: 100%; flex-grow: 1; background: rgba(13, 10, 22, 0.6); border: 1px solid var(--border-gold); border-radius: 6px; padding: 20px; color: var(--text-main); font-size: 16px; font-family: 'Georgia', serif; line-height: 1.8; resize: none; box-sizing: border-box; }
-        textarea:focus { outline: none; box-shadow: 0 0 10px rgba(243, 156, 18, 0.2); }
-        .stats-bar { margin-top: 12px; font-size: 13px; color: var(--text-muted); display: flex; justify-content: space-between; font-family: sans-serif; }
-
-        /* GENERATOR & EXTRAS VIEW */
-        .extras-container { padding: 40px; width: 100%; overflow-y: auto; box-sizing: border-box; }
-        .generator-card { background: var(--bg-card); border: 1px solid var(--border-gold); border-radius: 8px; padding: 25px; margin-bottom: 20px; max-width: 600px; }
-        .generator-card h3 { color: var(--gold); margin-top: 0; }
-        .generator-card p { font-style: italic; color: var(--text-muted); font-size: 16px; }
+        /* TIMELINE STYLES */
+        .timeline-track { display: flex; flex-direction: column; gap: 20px; padding-left: 20px; border-left: 2px solid var(--accent); margin-left: 20px; }
+        .timeline-event { background: var(--bg-card); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; position: relative; }
+        .timeline-event::before { content: ''; position: absolute; left: -27px; top: 18px; width: 12px; height: 12px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent); }
     </style>
 </head>
-<body>
-    <canvas id="stars"></canvas>
+<body data-theme="midnight">
 
-    <header>
-        <div class="logo">♾️ LIMITLESS STUDIO — Vault: <span style="color:#fff;">{{ username }}</span></div>
-        <div class="nav-tabs">
-            <button class="nav-btn active" onclick="switchView('library', this)">Library</button>
-            <button class="nav-btn" onclick="switchView('manuscript', this)" id="nav-manuscript">Manuscript</button>
-            <button class="nav-btn" onclick="switchView('characters', this)">Characters</button>
-            <button class="nav-btn" onclick="switchView('worldbuilding', this)">Worldbuilding</button>
-            <button class="nav-btn" onclick="switchView('storyboard', this)">Storyboard</button>
-            <button class="nav-btn" onclick="switchView('extras', this)">Creative Hub</button>
+    <!-- SECURE VAULT LOCKDOWN SCREEN -->
+    <div id="lock-screen">
+        <div style="text-align: center; margin-bottom: 25px;">
+            <h1 style="font-family: var(--font-heading); color: var(--accent); font-size: 2rem; letter-spacing: 3px; margin-bottom: 10px;">LIMITLESS VAULT</h1>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Touch biometric scanner to decrypt your studio</p>
         </div>
-        <div class="header-actions">
-            <span id="status-msg"></span>
-            <button class="action-pill" onclick="saveAll()">SAVE VAULT</button>
-            <button class="logout-btn" onclick="logout()">Logout</button>
+        <div class="biometric-scanner" onclick="unlockVault()">
+            <div class="scanner-beam"></div>
+            <span style="font-size: 2rem; color: var(--accent);">🔒</span>
+        </div>
+    </div>
+
+    <!-- APP HEADER -->
+    <header>
+        <div class="logo">LIMITLESS STUDIO</div>
+        <div class="header-controls">
+            <select id="theme-selector" onchange="changeTheme(this.value)">
+                <option value="midnight">Midnight Sky (Blue/Dark)</option>
+                <option value="cyberpunk">Cyberpunk Neon</option>
+                <option value="emerald">Emerald Forest</option>
+                <option value="ruby">Blood Moon Ruby</option>
+            </select>
+            <button onclick="openModal('yarn-modal')">🧵 Detective Yarn Board</button>
+            <button onclick="openModal('timeline-modal')">⏳ Timeline Mapper</button>
+            <button class="btn-primary" onclick="toggleFocusMode()">✨ Focus Mode</button>
+            <button onclick="saveData()">💾 Save Vault</button>
+            <button onclick="logout()">Logout</button>
         </div>
     </header>
 
-    <div id="library" class="workspace active">
-        <div class="library-view">
-            <h2 style="color: var(--gold); margin-top:0;">Your Creative Library</h2>
-            <p style="color: var(--text-muted);">Choose an existing story or create a short story / epic novel.</p>
-            <div id="library-grid" class="library-grid"></div>
-            <button class="action-pill" style="margin-top: 30px;" onclick="promptNewBook()">+ Forge New Manuscript</button>
-        </div>
-    </div>
+    <!-- WORKSPACE -->
+    <div class="app-workspace">
+        <sidebar>
+            <div class="sidebar-header">
+                <h3 style="font-family: var(--font-heading); font-size: 0.9rem; color: var(--accent);">PROJECT ARCHIVE</h3>
+                <button class="btn-primary" onclick="addBook()">+ New Book</button>
+            </div>
+            <div class="sidebar-tabs">
+                <button class="tab-btn active" onclick="switchTab('chapters')">Chapters</button>
+                <button class="tab-btn" onclick="switchTab('characters')">Characters</button>
+            </div>
+            <div class="sidebar-content" id="sidebar-list">
+                <!-- Dynamically loaded -->
+            </div>
+        </sidebar>
 
-    <div id="manuscript" class="workspace">
-        <div id="manuscript-container" class="split-layout"></div>
-    </div>
-
-    <div id="characters" class="workspace">
-        <div class="split-layout">
-            <sidebar>
-                <div class="sidebar-header"><span>Characters</span><button class="gold-btn" onclick="addCharacter()">+ Add</button></div>
-                <ul id="char-list" class="item-list"></ul>
-            </sidebar>
-            <div class="editor-pane">
-                <input type="text" id="char-name" placeholder="Character Name" oninput="saveCurrentChar()">
-                <textarea id="char-desc" placeholder="Backstory, traits, role, relationships..." oninput="saveCurrentChar()"></textarea>
+        <div class="editor-main">
+            <div class="toolbar">
+                <span id="word-count" style="font-size: 0.85rem; color: var(--text-muted);">Words: 0 | Characters: 0</span>
+                <span id="save-status" style="font-size: 0.85rem; color: var(--accent); margin-left: auto;">Vault Synced</span>
+            </div>
+            <div class="canvas-area">
+                <div class="document-pad">
+                    <input type="text" id="active-title" placeholder="Untitled Chapter / Character..." oninput="updateActiveItemTitle()">
+                    <textarea id="active-content" placeholder="Begin weaving your universe..." oninput="updateActiveContent()"></textarea>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="worldbuilding" class="workspace">
-        <div class="split-layout">
-            <sidebar>
-                <div class="sidebar-header"><span>Lore & Locations</span><button class="gold-btn" onclick="addWorldItem()">+ Add</button></div>
-                <ul id="world-list" class="item-list"></ul>
-            </sidebar>
-            <div class="editor-pane">
-                <input type="text" id="world-title" placeholder="Location, Magic System, or Rule Title" oninput="saveCurrentWorld()">
-                <textarea id="world-desc" placeholder="Describe the lore and history of your universe..." oninput="saveCurrentWorld()"></textarea>
+    <!-- DETECTIVE YARN BOARD MODAL -->
+    <div class="modal-overlay" id="yarn-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="font-family: var(--font-heading); color: var(--accent);">Detective Node Yarn Board</h3>
+                <button onclick="closeModal('yarn-modal')">✕ Close</button>
+            </div>
+            <div class="modal-body">
+                <div id="yarn-canvas">
+                    <div class="yarn-node" style="top: 50px; left: 50px;" draggable="true">
+                        <h4>Protagonist</h4>
+                        <p>Searching for sector 4 origins.</p>
+                    </div>
+                    <div class="yarn-node" style="top: 200px; left: 350px;" draggable="true">
+                        <h4>The Catalyst</h4>
+                        <p>Stolen artifact coordinates.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="storyboard" class="workspace">
-        <div class="editor-pane" style="width: 100%;">
-            <h2 style="color: var(--gold); margin-top:0;">Storyboard & Plot Beats</h2>
-            <textarea id="storyboard-text" placeholder="Map out acts, turning points, and plot hooks..." oninput="saveStoryboard()"></textarea>
-        </div>
-    </div>
-
-    <div id="extras" class="workspace">
-        <div class="extras-container">
-            <h2 style="color: var(--gold); margin-top:0;">Inspiration & Prompt Generator</h2>
-            <div class="generator-card">
-                <h3>Daily Writing Prompt</h3>
-                <p id="prompt-box">"A key that opens doors into people's memories, but one door is locked from the inside."</p>
-                <button class="gold-btn" onclick="generatePrompt()">New Random Prompt</button>
+    <!-- TIMELINE MAPPER MODAL -->
+    <div class="modal-overlay" id="timeline-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="font-family: var(--font-heading); color: var(--accent);">Interactive Plot Timeline</h3>
+                <button onclick="closeModal('timeline-modal')">✕ Close</button>
             </div>
-            <div class="generator-card">
-                <h3>Writer's Rule of the Day</h3>
-                <p>"Write with doors closed, edit with doors open."</p>
+            <div class="modal-body">
+                <div class="timeline-track">
+                    <div class="timeline-event">
+                        <h4 style="color: var(--accent);">Phase I: Ignition</h4>
+                        <p style="color: var(--text-muted); font-size: 0.85rem;">The stars flare unexpectedly across Sector 4.</p>
+                    </div>
+                    <div class="timeline-event">
+                        <h4 style="color: var(--accent);">Phase II: The Anomaly</h4>
+                        <p style="color: var(--text-muted); font-size: 0.85rem;">Captain Vexa discovers the encrypted data stream.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Particle canvas animation
-        const canvas = document.getElementById('stars');
-        const ctx = canvas.getContext('2d');
-        let width = canvas.width = window.innerWidth;
-        let height = canvas.height = window.innerHeight;
-        let particles = Array.from({length: 50}, () => ({
-            x: Math.random() * width, y: Math.random() * height,
-            radius: Math.random() * 1.5, alpha: Math.random(), speed: Math.random() * 0.15 + 0.05
-        }));
-        function animate() {
-            ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = "#ffffff";
-            particles.forEach(p => {
-                p.y -= p.speed;
-                if(p.y < 0) p.y = height;
-                ctx.globalAlpha = p.alpha;
-                ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill();
-            });
-            requestAnimationFrame(animate);
-        }
-        animate();
-
         let appData = { books: [] };
-        let activeBook = 0;
-        let activeChap = 0;
-        let activeChar = 0;
-        let activeWorld = 0;
+        let currentBookIndex = 0;
+        let currentTab = 'chapters';
+        let currentIndex = 0;
 
-        window.onload = () => {
-            fetch('/api/load').then(r => r.json()).then(d => {
-                if(d.error) { window.location.reload(); return; }
-                appData = d;
-                renderLibrary();
-                if(appData.books.length > 0) loadBook(0);
-            });
-        };
-
-        function switchView(id, btn) {
-            document.querySelectorAll('.workspace').forEach(w => w.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            btn.classList.add('active');
-            if(id === 'library') renderLibrary();
-            if(id === 'manuscript') renderManuscriptWorkspace();
+        function unlockVault() {
+            document.getElementById('lock-screen').classList.add('unlocked');
+            loadData();
         }
 
-        function renderLibrary() {
-            const grid = document.getElementById('library-grid');
-            grid.innerHTML = '';
-            appData.books.forEach((b, i) => {
-                const card = document.createElement('div');
-                card.className = 'book-card';
-                card.onclick = () => { activeBook = i; loadBook(i); switchView('manuscript', document.getElementById('nav-manuscript')); };
-                let formatBadge = b.format === 'short' ? 'SHORT STORY (SINGLE PAGE)' : `EPIC NOVEL (${b.chapters.length} CHAPTERS)`;
-                card.innerHTML = `<div><span class="badge">${formatBadge}</span><h3>${b.title}</h3><p>${b.genre || 'General Fiction'}</p></div><p style="margin-top:15px; color:var(--gold); font-size:12px;">Open Workspace →</p>`;
-                grid.appendChild(card);
-            });
+        function changeTheme(themeName) {
+            document.body.setAttribute('data-theme', themeName);
         }
 
-        function promptNewBook() {
-            const title = prompt("Enter your manuscript name:", "Chronicles of Infinity");
-            if(!title) return;
-            const formatChoice = prompt("Choose format:\nType 'short' for Short Story (Single Page)\nType 'long' for Epic Novel (Multi-Chapter)", "long");
-            const format = (formatChoice && formatChoice.toLowerCase() === 'short') ? 'short' : 'long';
-            
-            const newBook = {
-                id: Date.now(),
-                title: title,
-                genre: "Fantasy / Drama",
-                format: format,
-                description: "A fresh new masterpiece.",
-                single_content: "",
-                chapters: format === 'long' ? [{id: 1, title: "Chapter 1", content: ""}] : [],
-                characters: [{id: 1, name: "Protagonist", description: ""}],
-                worldbuilding: [{id: 1, title: "Main Setting", content: ""}],
-                storyboard: "Act 1: Setup\nAct 2: Conflict\nAct 3: Resolution"
-            };
-            appData.books.push(newBook);
-            activeBook = appData.books.length - 1;
-            renderLibrary();
-            loadBook(activeBook);
-            switchView('manuscript', document.getElementById('nav-manuscript'));
+        function toggleFocusMode() {
+            document.body.classList.toggle('focus-mode');
         }
 
-        function loadBook(idx) {
-            activeBook = idx;
-            activeChap = 0; activeChar = 0; activeWorld = 0;
-            renderManuscriptWorkspace();
-            renderChars();
-            renderWorld();
-            document.getElementById('storyboard-text').value = appData.books[idx].storyboard || '';
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        async function loadData() {
+            try {
+                let res = await fetch('/api/load');
+                let data = await res.json();
+                if(data.books) {
+                    appData.books = data.books;
+                    renderSidebar();
+                    loadActiveEditor();
+                }
+            } catch(e) { console.error(e); }
         }
 
-        function renderManuscriptWorkspace() {
-            const container = document.getElementById('manuscript-container');
-            const book = appData.books[activeBook];
-            if(!book) return;
-
-            if(book.format === 'short') {
-                // Short Story Layout (No Chapters Sidebar, Just Full Editor)
-                container.innerHTML = `
-                    <div class="editor-pane" style="width:100%;">
-                        <input type="text" id="short-title" value="${book.title}" oninput="updateShortTitle(this)">
-                        <textarea id="short-content" placeholder="Write your short story in one seamless flow..." oninput="updateShortContent(this)">${book.single_content || ''}</textarea>
-                        <div class="stats-bar"><span id="short-words">Word Count: 0</span><span>Format: Short Story</span></div>
-                    </div>
-                `;
-                updateShortWords();
-            } else {
-                // Long Story Layout (With Chapters Sidebar)
-                container.innerHTML = `
-                    <sidebar>
-                        <div class="sidebar-header"><span>Chapters</span><button class="gold-btn" onclick="addChapter()">+ Add</button></div>
-                        <ul id="chapter-list" class="item-list"></ul>
-                    </sidebar>
-                    <div class="editor-pane">
-                        <input type="text" id="chap-title" placeholder="Chapter Title" oninput="saveCurrentChapter()">
-                        <textarea id="chap-content" placeholder="Write chapter content..." oninput="updateWordCounts()"></textarea>
-                        <div class="stats-bar">
-                            <span id="chap-words">Chapter Words: 0</span>
-                            <span id="total-words">Total Book Words: 0</span>
-                        </div>
-                    </div>
-                `;
-                renderChapters();
-                if(book.chapters.length > 0) loadChapter(0);
-            }
-        }
-
-        /* Short Story Handlers */
-        function updateShortTitle(el) {
-            appData.books[activeBook].title = el.value;
-        }
-        function updateShortContent(el) {
-            appData.books[activeBook].single_content = el.value;
-            updateShortWords();
-        }
-        function updateShortWords() {
-            const text = document.getElementById('short-content').value.trim();
-            const words = text === '' ? 0 : text.split(/\s+/).length;
-            document.getElementById('short-words').innerText = `Word Count: ${words}`;
-        }
-
-        /* Long Story Chapter Handlers */
-        function renderChapters() {
-            const list = document.getElementById('chapter-list');
-            if(!list) return;
-            list.innerHTML = '';
-            appData.books[activeBook].chapters.forEach((c, i) => {
-                const li = document.createElement('li');
-                li.className = `list-item ${i === activeChap ? 'active' : ''}`;
-                li.onclick = () => { saveCurrentChapter(); activeChap = i; renderChapters(); loadChapter(i); };
-                li.innerHTML = `<span class="item-title">${c.title}</span>`;
-                list.appendChild(li);
-            });
-            calcTotals();
-        }
-
-        function loadChapter(i) {
-            activeChap = i;
-            const c = appData.books[activeBook].chapters[i];
-            document.getElementById('chap-title').value = c.title;
-            document.getElementById('chap-content').value = c.content;
-            updateWordCounts();
-        }
-
-        function saveCurrentChapter() {
-            const b = appData.books[activeBook];
-            if(b && b.format === 'long' && b.chapters[activeChap]) {
-                b.chapters[activeChap].title = document.getElementById('chap-title').value;
-                b.chapters[activeChap].content = document.getElementById('chap-content').value;
-            }
-        }
-
-        function addChapter() {
-            saveCurrentChapter();
-            const b = appData.books[activeBook];
-            b.chapters.push({id: Date.now(), title: `Chapter ${b.chapters.length + 1}`, content: ''});
-            activeChap = b.chapters.length - 1;
-            renderChapters();
-            loadChapter(activeChap);
-        }
-
-        function updateWordCounts() {
-            saveCurrentChapter();
-            const text = document.getElementById('chap-content').value.trim();
-            const words = text === '' ? 0 : text.split(/\s+/).length;
-            document.getElementById('chap-words').innerText = `Chapter Words: ${words}`;
-            calcTotals();
-        }
-
-        function calcTotals() {
-            let total = 0;
-            appData.books[activeBook].chapters.forEach(c => {
-                if(c.content) total += c.content.trim().split(/\s+/).length;
-            });
-            document.getElementById('total-words').innerText = `Total Book Words: ${total}`;
-        }
-
-        /* Characters Handlers */
-        function renderChars() {
-            const list = document.getElementById('char-list');
-            list.innerHTML = '';
-            appData.books[activeBook].characters.forEach((ch, i) => {
-                const li = document.createElement('li');
-                li.className = `list-item ${i === activeChar ? 'active' : ''}`;
-                li.onclick = () => { saveCurrentChar(); activeChar = i; renderChars(); loadChar(i); };
-                li.innerHTML = `<span class="item-title">${ch.name}</span>`;
-                list.appendChild(li);
-            });
-            if(appData.books[activeBook].characters.length > 0) loadChar(activeChar);
-        }
-        function loadChar(i) {
-            activeChar = i;
-            const ch = appData.books[activeBook].characters[i];
-            document.getElementById('char-name').value = ch.name;
-            document.getElementById('char-desc').value = ch.description;
-        }
-        function saveCurrentChar() {
-            const b = appData.books[activeBook];
-            if(b && b.characters[activeChar]) {
-                b.characters[activeChar].name = document.getElementById('char-name').value;
-                b.characters[activeChar].description = document.getElementById('char-desc').value;
-            }
-            renderChars();
-        }
-        function addCharacter() {
-            saveCurrentChar();
-            appData.books[activeBook].characters.push({id: Date.now(), name: 'New Character', description: ''});
-            activeChar = appData.books[activeBook].characters.length - 1;
-            renderChars();
-            loadChar(activeChar);
-        }
-
-        /* Worldbuilding Handlers */
-        function renderWorld() {
-            const list = document.getElementById('world-list');
-            list.innerHTML = '';
-            if(!appData.books[activeBook].worldbuilding) appData.books[activeBook].worldbuilding = [];
-            appData.books[activeBook].worldbuilding.forEach((w, i) => {
-                const li = document.createElement('li');
-                li.className = `list-item ${i === activeWorld ? 'active' : ''}`;
-                li.onclick = () => { saveCurrentWorld(); activeWorld = i; renderWorld(); loadWorld(i); };
-                li.innerHTML = `<span class="item-title">${w.title}</span>`;
-                list.appendChild(li);
-            });
-            if(appData.books[activeBook].worldbuilding.length > 0) loadWorld(activeWorld);
-        }
-        function loadWorld(i) {
-            activeWorld = i;
-            const w = appData.books[activeBook].worldbuilding[i];
-            document.getElementById('world-title').value = w.title;
-            document.getElementById('world-desc').value = w.content;
-        }
-        function saveCurrentWorld() {
-            const b = appData.books[activeBook];
-            if(b && b.worldbuilding && b.worldbuilding[activeWorld]) {
-                b.worldbuilding[activeWorld].title = document.getElementById('world-title').value;
-                b.worldbuilding[activeWorld].content = document.getElementById('world-desc').value;
-            }
-            renderWorld();
-        }
-        function addWorldItem() {
-            saveCurrentWorld();
-            const b = appData.books[activeBook];
-            if(!b.worldbuilding) b.worldbuilding = [];
-            b.worldbuilding.push({id: Date.now(), title: 'New Realm / Lore', content: ''});
-            activeWorld = b.worldbuilding.length - 1;
-            renderWorld();
-            loadWorld(activeWorld);
-        }
-
-        function saveStoryboard() {
-            appData.books[activeBook].storyboard = document.getElementById('storyboard-text').value;
-        }
-
-        function generatePrompt() {
-            const prompts = [
-                "Two strangers realize they are dreaming the exact same dream every single night.",
-                "Magic is measured in currency, and you just went completely bankrupt casting a minor spell.",
-                "The stars in the night sky suddenly rearrange themselves to spell out a warning.",
-                "You find an old diary written in your own handwriting, dated fifty years in the future."
-            ];
-            document.getElementById('prompt-box').innerText = `"${prompts[Math.floor(Math.random() * prompts.length)]}"`;
-        }
-
-        function saveAll() {
-            saveCurrentChapter();
-            saveCurrentChar();
-            saveCurrentWorld();
-            fetch('/api/save', {
+        async function saveData() {
+            document.getElementById('save-status').innerText = 'Saving...';
+            await fetch('/api/save', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(appData)
-            }).then(r => r.json()).then(res => {
-                const msg = document.getElementById('status-msg');
-                msg.innerText = res.message;
-                setTimeout(() => msg.innerText = '', 3000);
             });
+            document.getElementById('save-status').innerText = 'Vault Synced';
         }
 
         function logout() {
-            fetch('/api/logout', {method: 'POST'}).then(() => window.location.reload());
+            fetch('/api/logout', {method: 'POST'}).then(() => location.reload());
+        }
+
+        function renderSidebar() {
+            let list = document.getElementById('sidebar-list');
+            list.innerHTML = '';
+            if(!appData.books[currentBookIndex]) return;
+            
+            let items = currentTab === 'chapters' ? appData.books[currentBookIndex].chapters : appData.books[currentBookIndex].characters;
+            
+            items.forEach((item, idx) => {
+                let div = document.createElement('div');
+                div.className = `item-card ${idx === currentIndex ? 'active' : ''}`;
+                div.innerHTML = `<strong>${item.title || item.name || 'Untitled'}</strong>`;
+                div.onclick = () => { currentIndex = idx; loadActiveEditor(); renderSidebar(); };
+                list.appendChild(div);
+            });
+            
+            let addBtn = document.createElement('button');
+            addBtn.className = 'btn-primary';
+            addBtn.style.width = '100%';
+            addBtn.style.marginTop = '10px';
+            addBtn.innerText = `+ Add ${currentTab === 'chapters' ? 'Chapter' : 'Character'}`;
+            addBtn.onclick = addItem;
+            list.appendChild(addBtn);
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            currentIndex = 0;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            renderSidebar();
+            loadActiveEditor();
+        }
+
+        function loadActiveEditor() {
+            if(!appData.books[currentBookIndex]) return;
+            let items = currentTab === 'chapters' ? appData.books[currentBookIndex].chapters : appData.books[currentBookIndex].characters;
+            let item = items[currentIndex];
+            if(!item) return;
+
+            document.getElementById('active-title').value = item.title || item.name || '';
+            document.getElementById('active-content').value = item.content || item.description || '';
+            updateWordCount();
+        }
+
+        function updateActiveItemTitle() {
+            let items = currentTab === 'chapters' ? appData.books[currentBookIndex].chapters : appData.books[currentBookIndex].characters;
+            if(currentTab === 'chapters') items[currentIndex].title = document.getElementById('active-title').value;
+            else items[currentIndex].name = document.getElementById('active-title').value;
+            renderSidebar();
+        }
+
+        function updateActiveContent() {
+            let items = currentTab === 'chapters' ? appData.books[currentBookIndex].chapters : appData.books[currentBookIndex].characters;
+            if(currentTab === 'chapters') items[currentIndex].content = document.getElementById('active-content').value;
+            else items[currentIndex].description = document.getElementById('active-content').value;
+            updateWordCount();
+        }
+
+        function updateWordCount() {
+            let text = document.getElementById('active-content').value;
+            let words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            let chars = text.length;
+            document.getElementById('word-count').innerText = `Words: ${words} | Characters: ${chars}`;
+        }
+
+        function addItem() {
+            let book = appData.books[currentBookIndex];
+            if(currentTab === 'chapters') {
+                book.chapters.push({id: Date.now(), title: "New Chapter", content: ""});
+                currentIndex = book.chapters.length - 1;
+            } else {
+                book.characters.push({id: Date.now(), name: "New Character", description: ""});
+                currentIndex = book.characters.length - 1;
+            }
+            renderSidebar();
+            loadActiveEditor();
+        }
+
+        function addBook() {
+            let title = prompt("Enter Book Title:");
+            if(!title) return;
+            appData.books.push({
+                id: Date.now(),
+                title: title,
+                chapters: [{id: 1, title: "Chapter 1", content: "Once upon a time..."}],
+                characters: [{id: 1, name: "Hero", description: "The main protagonist."}]
+            });
+            currentBookIndex = appData.books.length - 1;
+            currentIndex = 0;
+            renderSidebar();
+            loadActiveEditor();
         }
     </script>
 </body>
