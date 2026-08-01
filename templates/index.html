@@ -177,7 +177,7 @@
         body.focus-mode .canvas-area { padding: 0; align-items: center; }
         body.focus-mode .document-pad { max-width: 1000px; height: 100vh; border: none; border-radius: 0; background: var(--bg-deep); box-shadow: none; padding: 60px; }
 
-        /* MODALS (YARN BOARD & TIMELINE) */
+        /* MODALS */
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.8);
             z-index: 1000; display: none; align-items: center; justify-content: center;
@@ -192,15 +192,16 @@
         .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         .modal-body { flex: 1; padding: 20px; overflow: auto; position: relative; }
         
-        /* DETECTIVE YARN CANVAS */
-        #yarn-canvas { width: 100%; height: 100%; position: relative; background: radial-gradient(circle, var(--bg-card) 10%, var(--bg-deep) 90%); }
+        /* DETECTIVE YARN BOARD */
         .yarn-node {
-            position: absolute; width: 160px; background: var(--bg-card);
+            position: absolute; width: 200px; background: var(--bg-card);
             border: 2px solid var(--accent); border-radius: 8px; padding: 10px;
-            cursor: grab; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            cursor: move; box-shadow: 0 5px 15px rgba(0,0,0,0.5); user-select: none;
         }
-        .yarn-node h4 { font-family: var(--font-heading); font-size: 0.9rem; color: var(--accent); margin-bottom: 5px; }
-        .yarn-node p { font-size: 0.75rem; color: var(--text-muted); }
+        .yarn-node input, .yarn-node textarea {
+            background: var(--bg-deep); border: 1px solid var(--border-color);
+            color: var(--text-main); font-size: 0.8rem; width: 100%; margin-top: 4px; padding: 6px;
+        }
 
         /* TIMELINE STYLES */
         .timeline-track { display: flex; flex-direction: column; gap: 20px; padding-left: 20px; border-left: 2px solid var(--accent); margin-left: 20px; }
@@ -277,16 +278,13 @@
                 <h3 style="font-family: var(--font-heading); color: var(--accent);">Detective Node Yarn Board</h3>
                 <button onclick="closeModal('yarn-modal')">✕ Close</button>
             </div>
-            <div class="modal-body">
-                <div id="yarn-canvas">
-                    <div class="yarn-node" style="top: 50px; left: 50px;" draggable="true">
-                        <h4>Protagonist</h4>
-                        <p>Searching for sector 4 origins.</p>
-                    </div>
-                    <div class="yarn-node" style="top: 200px; left: 350px;" draggable="true">
-                        <h4>The Catalyst</h4>
-                        <p>Stolen artifact coordinates.</p>
-                    </div>
+            <div class="modal-body" style="display: flex; flex-direction: column;">
+                <div style="margin-bottom: 10px;">
+                    <button class="btn-primary" onclick="addYarnNode()">+ Add Yarn Node</button>
+                    <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 10px;">(Drag cards anywhere on the board)</span>
+                </div>
+                <div id="yarn-canvas" style="flex: 1; min-height: 500px; position: relative; background: radial-gradient(circle, var(--bg-card) 10%, var(--bg-deep) 90%); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+                    <!-- Nodes rendered via JS -->
                 </div>
             </div>
         </div>
@@ -320,6 +318,11 @@
         let currentTab = 'chapters';
         let currentIndex = 0;
 
+        let yarnNodes = [
+            { id: 1, title: "Protagonist", text: "Searching for sector 4 origins.", x: 50, y: 50 },
+            { id: 2, title: "The Catalyst", text: "Stolen artifact coordinates.", x: 300, y: 150 }
+        ];
+
         function unlockVault() {
             document.getElementById('lock-screen').classList.add('unlocked');
             loadData();
@@ -333,7 +336,10 @@
             document.body.classList.toggle('focus-mode');
         }
 
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function openModal(id) { 
+            document.getElementById(id).classList.add('active');
+            if(id === 'yarn-modal') renderYarnBoard();
+        }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
         async function loadData() {
@@ -453,6 +459,61 @@
             currentIndex = 0;
             renderSidebar();
             loadActiveEditor();
+        }
+
+        // YARN BOARD LOGIC
+        function renderYarnBoard() {
+            let canvas = document.getElementById('yarn-canvas');
+            canvas.innerHTML = '';
+            
+            yarnNodes.forEach(node => {
+                let div = document.createElement('div');
+                div.className = 'yarn-node';
+                div.style.left = node.x + 'px';
+                div.style.top = node.y + 'px';
+                div.innerHTML = `
+                    <input type="text" value="${node.title}" oninput="updateYarnTitle(${node.id}, this.value)">
+                    <textarea rows="2" oninput="updateYarnText(${node.id}, this.value)">${node.text}</textarea>
+                `;
+                
+                let isDragging = false;
+                let startX, startY;
+                
+                div.onmousedown = (e) => {
+                    if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                    isDragging = true;
+                    startX = e.clientX - node.x;
+                    startY = e.clientY - node.y;
+                    div.style.zIndex = 1000;
+                };
+                
+                window.onmousemove = (e) => {
+                    if(!isDragging) return;
+                    node.x = e.clientX - startX;
+                    node.y = e.clientY - startY;
+                    div.style.left = node.x + 'px';
+                    div.style.top = node.y + 'px';
+                };
+                
+                window.onmouseup = () => { isDragging = false; div.style.zIndex = 1; };
+                
+                canvas.appendChild(div);
+            });
+        }
+
+        function addYarnNode() {
+            yarnNodes.push({ id: Date.now(), title: "New Clue", text: "Details here...", x: 100, y: 100 });
+            renderYarnBoard();
+        }
+
+        function updateYarnTitle(id, val) {
+            let node = yarnNodes.find(n => n.id === id);
+            if(node) node.title = val;
+        }
+
+        function updateYarnText(id, val) {
+            let node = yarnNodes.find(n => n.id === id);
+            if(node) node.text = val;
         }
     </script>
 </body>
