@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limitless Studio | Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #08080a; --bg-panel: #121218; --bg-card: #1a1a24;
+            --border-color: #2a2a38; --accent: #38bdf8; --accent-glow: rgba(56, 189, 248, 0.2);
+            --text-main: #f8fafc; --text-muted: #94a3b8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg-deep); color: var(--text-main); font-family: 'Inter', sans-serif; min-height: 100vh; padding: 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
+        h1 { font-family: 'Cinzel', serif; color: var(--accent); letter-spacing: 2px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+        .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; min-height: 180px; }
+        .card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 10px 30px var(--accent-glow); }
+        .new-card { border: 2px dashed var(--border-color); align-items: center; justify-content: center; text-align: center; color: var(--text-muted); }
+        .new-card:hover { border-color: var(--accent); color: var(--accent); }
+        button { background: var(--accent); color: #000; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>LIMITLESS STUDIO</h1>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">Welcome back, {{ username }}</p>
+        </div>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <div class="grid">
+        {% for book in books %}
+        <div class="card" onclick="window.location.href='/studio/{{ book.id }}'">
+            <div>
+                <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--accent); font-weight: 600;">{{ book.genre }}</span>
+                <h3 style="font-family: 'Cinzel', serif; margin: 8px 0; font-size: 1.2rem;">{{ book.title }}</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">{{ book.description }}</p>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 20px;">⚡ Open Immersive Studio →</div>
+        </div>
+        {% endfor %}
+        
+        <div class="card new-card" onclick="createBookModal()">
+            <div style="font-size: 2rem; margin-bottom: 8px;">＋</div>
+            <div style="font-weight: 600;">Create New Universe</div>
+        </div>
+    </div>
+
+    <script>
+        async function createBookModal() {
+            let title = prompt("Enter Story Title:");
+            if(!title) return;
+            let genre = prompt("Enter Genre (e.g., Sci-Fi, Dark Fantasy):") || "General";
+            let description = prompt("Short logline or summary:") || "";
+            
+            let res = await fetch('/api/create_book', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({title, genre, description})
+            });
+            let data = await res.json();
+            if(data.status === 'success') {
+                window.location.href = `/studio/${data.book_id}`;
+            }
+        }
+        function logout() { fetch('/api/logout', {method: 'POST'}).then(() => location.reload()); }
+    </script>
+</body>
+</html>
