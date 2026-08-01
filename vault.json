@@ -1,0 +1,44 @@
+{
+    "users": {
+        "creator": {
+            "password": "password123",
+            "books": [
+                {
+                    "id": 1,
+                    "title": "The Infinite Starfall",
+                    "genre": "Sci-Fi",
+                    "format": "long",
+                    "description": "An epic journey across the galaxy.",
+                    "single_content": "",
+                    "chapters": [
+                        {
+                            "id": 1,
+                            "title": "Chapter 1: Ignition",
+                            "content": "The stars burned brighter than usual that night..."
+                        }
+                    ],
+                    "characters": [
+                        {
+                            "id": 1,
+                            "name": "Captain Vexa",
+                            "role": "Commander",
+                            "description": "Fearless explorer of the void."
+                        }
+                    ],
+                    "worldbuilding": [
+                        {
+                            "id": 1,
+                            "title": "Sector 4",
+                            "content": "A lawless cluster of floating space stations."
+                        }
+                    ],
+                    "storyboard": "Act 1: Launch\nAct 2: The Anomaly\nAct 3: Discovery"
+                }
+            ]
+        },
+        "ishan": {
+            "password": "123",
+            "books": []
+        }
+    }
+}
