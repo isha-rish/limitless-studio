@@ -2,309 +2,566 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ book.title }} | Limitless Studio</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+    <title>Limitless Studio - Workspace</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-deep: #060608; --bg-panel: #111116; --bg-card: #181822;
-            --border-color: #232332; --accent: #38bdf8; --accent-glow: rgba(56, 189, 248, 0.25);
-            --text-main: #f1f5f9; --text-muted: #94a3b8;
+            --bg-main: #fcfcfc;
+            --sidebar-bg: #1a202c;
+            --sidebar-hover: #2d3748;
+            --text-main: #2d3748;
+            --accent: #3182ce;
+            --border: #e2e8f0;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg-deep); color: var(--text-main); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        /* Sidebar Navigation */
+        sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            color: #cbd5e0;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #2d3748;
+        }
+        .sidebar-header {
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            border-bottom: 1px solid #2d3748;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex: 1;
+        }
+        .nav-links li {
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-links li:hover, .nav-links li.active {
+            background-color: var(--sidebar-hover);
+            color: #fff;
+        }
+        .user-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #2d3748;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-footer a { color: #fc8181; text-decoration: none; }
 
-        header { height: 60px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 100; }
-        .logo { font-family: 'Cinzel', serif; font-size: 1.1rem; font-weight: 700; color: var(--accent); letter-spacing: 2px; display: flex; align-items: center; gap: 10px; }
-        .header-controls { display: flex; align-items: center; gap: 12px; }
-        button, select { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
-        button:hover { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
-        .btn-primary { background: var(--accent); color: #000; font-weight: 600; border: none; }
+        /* Main Content Container */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .top-bar {
+            height: 60px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+        }
+        .stats-group {
+            font-size: 13px;
+            color: #718096;
+            display: flex;
+            gap: 20px;
+        }
+        .save-status {
+            font-weight: 500;
+            color: #38a169;
+        }
 
-        .workspace { display: flex; flex: 1; height: calc(100vh - 60px); overflow: hidden; }
+        /* View Panels */
+        .workspace-panel {
+            flex: 1;
+            display: none;
+            padding: 40px;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        .workspace-panel.active {
+            display: flex;
+            gap: 30px;
+        }
+
+        /* Manuscript Editor View */
+        #panel-manuscript {
+            padding: 0;
+        }
+        .chapter-sidebar {
+            width: 260px;
+            background: #fff;
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chapter-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .chapter-list li {
+            padding: 10px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chapter-list li:hover { background: #edf2f7; }
+        .chapter-list li.active { background: #ebf8ff; color: #2b6cb0; font-weight: 500; }
         
-        sidebar { width: 280px; background: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
-        .sidebar-tabs { display: flex; background: var(--bg-deep); border-bottom: 1px solid var(--border-color); }
-        .tab-btn { flex: 1; padding: 10px; background: none; border: none; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; cursor: pointer; }
-        .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); background: var(--bg-panel); }
-        .sidebar-content { flex: 1; overflow-y: auto; padding: 15px; }
-        .item-card { background: var(--bg-card); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; }
-        .item-card:hover, .item-card.active { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-main);
+            padding: 40px;
+            overflow-y: auto;
+            align-items: center;
+        }
+        .editor-paper {
+            width: 100%;
+            max-width: 750px;
+            background: #fff;
+            padding: 60px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.03);
+            border-radius: 4px;
+            min-height: 80vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        .chapter-title-input {
+            font-size: 24px;
+            border: none;
+            outline: none;
+            font-family: 'Merriweather', serif;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #1a202c;
+            width: 100%;
+        }
+        .chapter-text-area {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-family: 'Merriweather', serif;
+            font-size: 17px;
+            line-height: 1.8;
+            color: #2d3748;
+            resize: none;
+            background: transparent;
+        }
 
-        .editor-main { flex: 1; display: flex; flex-direction: column; background: var(--bg-deep); position: relative; }
-        .toolbar { padding: 10px 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; gap: 15px; align-items: center; }
-        .canvas-area { flex: 1; padding: 40px; overflow-y: auto; display: flex; justify-content: center; }
-        .document-pad { width: 100%; max-width: 850px; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 20px; }
-        input[type="text"], textarea { background: var(--bg-deep); border: 1px solid var(--border-color); color: var(--text-main); padding: 12px; border-radius: 6px; font-family: 'Playfair Display', serif; font-size: 1rem; width: 100%; }
-        input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
-        textarea { flex: 1; min-height: 450px; resize: vertical; line-height: 1.8; }
-
-        /* FOCUS MODE & FLOATING EXIT BUTTON */
-        body.focus-mode sidebar, body.focus-mode header, body.focus-mode .toolbar { display: none !important; }
-        body.focus-mode .workspace { height: 100vh; }
-        body.focus-mode .canvas-area { padding: 0; align-items: center; }
-        body.focus-mode .document-pad { max-width: 1000px; height: 100vh; border: none; border-radius: 0; background: var(--bg-deep); box-shadow: none; padding: 60px; }
+        /* Generic Cards Grid (Characters, Plot) */
+        .grid-container {
+            flex: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .grid-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn:hover { background: #2b6cb0; }
         
-        .exit-focus-btn { position: fixed; top: 20px; right: 20px; background: rgba(18, 18, 24, 0.8); backdrop-filter: blur(10px); border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; border-radius: 30px; font-weight: 600; cursor: pointer; z-index: 99999; display: none; box-shadow: 0 0 20px var(--accent-glow); }
-        body.focus-mode .exit-focus-btn { display: block; }
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .card input, .card textarea {
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .card textarea { resize: vertical; height: 100px; }
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .btn-danger:hover { background: #c53030; }
 
-        /* MODALS */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 1000; display: none; align-items: center; justify-content: center; }
-        .modal-overlay.active { display: flex; }
-        .modal-content { width: 85vw; height: 80vh; background: var(--bg-panel); border: 1px solid var(--accent); border-radius: 14px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 50px var(--accent-glow); }
-        .modal-header { padding: 15px 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .modal-body { flex: 1; padding: 30px; overflow-y: auto; position: relative; }
-
-        /* CURVY ANIMATED SVG TIMELINE */
-        .timeline-container { position: relative; min-height: 500px; display: flex; flex-direction: column; gap: 40px; padding: 20px; }
-        .timeline-svg-path { position: absolute; top: 0; left: 50px; width: 100px; height: 100%; pointer-events: none; stroke: var(--accent); stroke-width: 3; fill: none; stroke-dasharray: 8 8; animation: pathGlow 4s infinite linear; }
-        @keyframes pathGlow { 0% { stroke-dashoffset: 0; opacity: 0.6; } 50% { opacity: 1; filter: drop-shadow(0 0 8px var(--accent)); } 100% { stroke-dashoffset: 100; opacity: 0.6; } }
-        
-        .timeline-node-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; margin-left: 80px; position: relative; box-shadow: 0 5px 20px rgba(0,0,0,0.4); transition: transform 0.2s; }
-        .timeline-node-card:hover { border-color: var(--accent); transform: translateX(5px); }
-        .timeline-node-card::before { content: ''; position: absolute; left: -49px; top: 25px; width: 16px; height: 16px; background: var(--bg-deep); border: 3px solid var(--accent); border-radius: 50%; box-shadow: 0 0 12px var(--accent); animation: pulseDot 2s infinite; }
-        @keyframes pulseDot { 0% { transform: scale(1); } 50% { transform: scale(1.3); box-shadow: 0 0 20px var(--accent); } 100% { transform: scale(1); } }
-
-        /* CHARACTER ANALYTICS */
-        .analytics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
-        .analytic-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .progress-bar { width: 100%; height: 6px; background: var(--bg-deep); border-radius: 3px; overflow: hidden; position: relative; }
-        .progress-fill { height: 100%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+        /* Synopsis Textarea */
+        .synopsis-box {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            height: 70vh;
+        }
+        .synopsis-box textarea {
+            flex: 1;
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            line-height: 1.6;
+            resize: none;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
 
-    <button class="exit-focus-btn" onclick="toggleFocusMode()">✕ Exit Focus Mode</button>
-
-    <header>
-        <div class="logo">
-            <span style="cursor:pointer;" onclick="window.location.href='/'">←</span> {{ book.title }}
+    <sidebar>
+        <div class="sidebar-header">
+            <span>Limitless Studio</span>
         </div>
-        <div class="header-controls">
-            <button onclick="openModal('timeline-modal')">📈 Curvy Timeline</button>
-            <button onclick="openModal('analytics-modal')">📊 Character Analytics</button>
-            <button class="btn-primary" onclick="toggleFocusMode()">✨ Focus Mode</button>
-            <button onclick="saveBook()">💾 Save Story</button>
+        <ul class="nav-links">
+            <li onclick="switchTab('manuscript', this)" class="active">📖 Manuscript</li>
+            <li onclick="switchTab('characters', this)">👥 Character Bible</li>
+            <li onclick="switchTab('plot', this)">📌 Plot & Storyboard</li>
+            <li onclick="switchTab('synopsis', this)">📝 Synopsis</li>
+        </ul>
+        <div class="user-footer">
+            <span>👤 {{ username }}</span>
+            <a href="/logout">Log Out</a>
         </div>
-    </header>
+    </sidebar>
 
-    <div class="workspace">
-        <sidebar>
-            <div class="sidebar-tabs">
-                <button class="tab-btn active" onclick="switchTab('chapters')">Chapters</button>
-                <button class="tab-btn" onclick="switchTab('characters')">Characters</button>
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="stats-group">
+                <span id="word-count">Words: 0</span>
+                <span id="char-count">Characters: 0</span>
             </div>
-            <div class="sidebar-content" id="sidebar-list"></div>
-        </sidebar>
+            <div id="save-status" class="save-status">Saved</div>
+        </div>
 
-        <div class="editor-main">
-            <div class="toolbar">
-                <span id="word-count" style="font-size: 0.85rem; color: var(--text-muted);">Words: 0</span>
-                <span id="save-status" style="font-size: 0.85rem; color: var(--accent); margin-left: auto;">Synced</span>
+        <div id="panel-manuscript" class="workspace-panel active">
+            <div class="chapter-sidebar">
+                <h3>Chapters</h3>
+                <button class="btn" onclick="addChapter()" style="width: 100%; margin-top: 10px;">+ New Chapter</button>
+                <ul id="chapter-list" class="chapter-list"></ul>
             </div>
-            <div class="canvas-area">
-                <div class="document-pad">
-                    <input type="text" id="active-title" placeholder="Title..." oninput="updateTitle()">
-                    <textarea id="active-content" placeholder="Draft your masterpiece..." oninput="updateContent()"></textarea>
+            <div class="editor-container">
+                <div class="editor-paper">
+                    <input type="text" id="active-chapter-title" class="chapter-title-input" placeholder="Chapter Title..." oninput="updateActiveChapterMetadata()">
+                    <textarea id="active-chapter-text" class="chapter-text-area" placeholder="Write your chapter masterpiece here..." oninput="updateActiveChapterContent()"></textarea>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- CURVY ANIMATED TIMELINE MODAL -->
-    <div class="modal-overlay" id="timeline-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 style="font-family: 'Cinzel', serif; color: var(--accent);">Interactive Curvy Universe Timeline</h3>
-                <button onclick="closeModal('timeline-modal')">✕ Close</button>
-            </div>
-            <div class="modal-body">
-                <div style="margin-bottom: 20px;">
-                    <button class="btn-primary" onclick="addTimelineNode()">+ Add Timeline Phase</button>
+        <div id="panel-characters" class="workspace-panel">
+            <div class="grid-container">
+                <div class="grid-header">
+                    <h2>Character Bible</h2>
+                    <button class="btn" onclick="addCharacter()">+ Add Character</button>
                 </div>
-                <div class="timeline-container" id="timeline-container">
-                    <svg class="timeline-svg-path">
-                        <path d="M 10 0 Q 60 150 10 300 T 10 600"></path>
-                    </svg>
-                    <!-- Rendered via JS -->
-                </div>
+                <div id="characters-grid" class="cards-grid"></div>
             </div>
         </div>
-    </div>
 
-    <!-- CHARACTER ANALYTICS MODAL -->
-    <div class="modal-overlay" id="analytics-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 style="font-family: 'Cinzel', serif; color: var(--accent);">Story Character Analytics</h3>
-                <button onclick="closeModal('analytics-modal')">✕ Close</button>
-            </div>
-            <div class="modal-body">
-                <div class="analytics-grid" id="analytics-grid">
-                    <!-- Rendered via JS -->
+        <div id="panel-plot" class="workspace-panel">
+            <div class="grid-container">
+                <div class="grid-header">
+                    <h2>Plot & Storyboard Cards</h2>
+                    <button class="btn" onclick="addPlotCard()">+ Add Plot Node</button>
                 </div>
+                <div id="plot-grid" class="cards-grid"></div>
+            </div>
+        </div>
+
+        <div id="panel-synopsis" class="workspace-panel">
+            <div class="synopsis-box">
+                <h2>Synopsis & Logline</h2>
+                <p style="color: #718096; font-size: 14px;">Keep your query letter, elevator pitch, or overarching book summary here.</p>
+                <textarea id="synopsis-text" placeholder="Write your synopsis here..." oninput="triggerAutoSave()"></textarea>
             </div>
         </div>
     </div>
 
     <script>
-        let currentBook = {{ book | tojson }};
-        let currentTab = 'chapters';
-        let currentIndex = 0;
+        let appData = {
+            manuscript: [{ id: 1, title: "Chapter 1: The Beginning", content: "" }],
+            characters: [],
+            plot: [],
+            synopsis: ""
+        };
+        let activeChapterId = 1;
+        let saveTimeout = null;
 
-        function toggleFocusMode() {
-            document.body.classList.toggle('focus-mode');
-        }
-
-        function openModal(id) { 
-            document.getElementById(id).classList.add('active');
-            if(id === 'timeline-modal') renderTimeline();
-            if(id === 'analytics-modal') renderAnalytics();
-        }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-        async function saveBook() {
-            document.getElementById('save-status').innerText = 'Saving...';
-            let res = await fetch(`/api/save_book/${currentBook.id}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(currentBook)
-            });
-            let data = await res.json();
-            if(data.status === 'success') {
-                document.getElementById('save-status').innerText = 'Synced';
+        // Fetch user data on page load
+        async function loadAppData() {
+            try {
+                let response = await fetch('/api/get_data');
+                if (response.ok) {
+                    let data = await response.json();
+                    if (data && Object.keys(data).length > 0) {
+                        appData = data;
+                        if (!appData.manuscript || appData.manuscript.length === 0) {
+                            appData.manuscript = [{ id: 1, title: "Chapter 1", content: "" }];
+                        }
+                        activeChapterId = appData.manuscript[0].id;
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to load app data", err);
             }
+            renderManuscriptSidebar();
+            loadActiveChapterIntoEditor();
+            renderCharacters();
+            renderPlot();
+            document.getElementById('synopsis-text').value = appData.synopsis || "";
+            updateGlobalStats();
         }
 
-        function renderSidebar() {
-            let list = document.getElementById('sidebar-list');
+        // Tab Switching Logic
+        function switchTab(tabName, element) {
+            document.querySelectorAll('.workspace-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
+            
+            document.getElementById('panel-' + tabName).classList.add('active');
+            element.classList.add('active');
+        }
+
+        // Manuscript Logic
+        function renderManuscriptSidebar() {
+            const list = document.getElementById('chapter-list');
             list.innerHTML = '';
-            let items = currentTab === 'chapters' ? currentBook.chapters : currentBook.characters;
-            
-            items.forEach((item, idx) => {
-                let div = document.createElement('div');
-                div.className = `item-card ${idx === currentIndex ? 'active' : ''}`;
-                div.innerHTML = `<strong>${item.title || item.name || 'Untitled'}</strong>`;
-                div.onclick = () => { currentIndex = idx; loadEditor(); renderSidebar(); };
-                list.appendChild(div);
+            appData.manuscript.forEach(ch => {
+                let li = document.createElement('li');
+                li.innerText = ch.title || "Untitled Chapter";
+                if (ch.id === activeChapterId) li.classList.add('active');
+                li.onclick = () => selectChapter(ch.id);
+                list.appendChild(li);
             });
-            
-            let addBtn = document.createElement('button');
-            addBtn.className = 'btn-primary';
-            addBtn.style.width = '100%';
-            addBtn.style.marginTop = '15px';
-            addBtn.innerText = `+ Add ${currentTab === 'chapters' ? 'Chapter' : 'Character'}`;
-            addBtn.onclick = addItem;
-            list.appendChild(addBtn);
         }
 
-        function switchTab(tab) {
-            currentTab = tab;
-            currentIndex = 0;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            renderSidebar();
-            loadEditor();
+        function selectChapter(id) {
+            activeChapterId = id;
+            loadActiveChapterIntoEditor();
+            renderManuscriptSidebar();
         }
 
-        function loadEditor() {
-            let items = currentTab === 'chapters' ? currentBook.chapters : currentBook.characters;
-            let item = items[currentIndex];
-            if(!item) return;
-            document.getElementById('active-title').value = item.title || item.name || '';
-            document.getElementById('active-content').value = item.content || item.description || '';
-            updateWordCount();
-        }
-
-        function updateTitle() {
-            let items = currentTab === 'chapters' ? currentBook.chapters : currentBook.characters;
-            if(currentTab === 'chapters') items[currentIndex].title = document.getElementById('active-title').value;
-            else items[currentIndex].name = document.getElementById('active-title').value;
-            renderSidebar();
-        }
-
-        function updateContent() {
-            let items = currentTab === 'chapters' ? currentBook.chapters : currentBook.characters;
-            if(currentTab === 'chapters') items[currentIndex].content = document.getElementById('active-content').value;
-            else items[currentIndex].description = document.getElementById('active-content').value;
-            updateWordCount();
-        }
-
-        function updateWordCount() {
-            let text = document.getElementById('active-content').value;
-            let words = text.trim() ? text.trim().split(/\s+/).length : 0;
-            document.getElementById('word-count').innerText = `Words: ${words}`;
-        }
-
-        function addItem() {
-            if(currentTab === 'chapters') {
-                currentBook.chapters.push({id: Date.now(), title: "New Chapter", content: ""});
-                currentIndex = currentBook.chapters.length - 1;
-            } else {
-                currentBook.characters.push({id: Date.now(), name: "New Character", role: "Supporting", description: "", archetype: "Dynamic", power: 50});
-                currentIndex = currentBook.characters.length - 1;
+        function loadActiveChapterIntoEditor() {
+            let ch = appData.manuscript.find(c => c.id === activeChapterId);
+            if (ch) {
+                document.getElementById('active-chapter-title').value = ch.title;
+                document.getElementById('active-chapter-text').value = ch.content;
             }
-            renderSidebar();
-            loadEditor();
         }
 
-        // CURVY TIMELINE LOGIC
-        function renderTimeline() {
-            let container = document.getElementById('timeline-container');
-            container.innerHTML = `<svg class="timeline-svg-path"><path d="M 10 0 Q 60 150 10 300 T 10 600"></path></svg>`;
-            
-            if(!currentBook.timeline) currentBook.timeline = [];
-            
-            currentBook.timeline.forEach((node, idx) => {
-                let div = document.createElement('div');
-                div.className = 'timeline-node-card';
-                div.innerHTML = `
-                    <input type="text" value="${node.phase}" oninput="updateTimelinePhase(${node.id}, this.value)" style="margin-bottom:8px;">
-                    <textarea rows="2" oninput="updateTimelineDetails(${node.id}, this.value)">${node.details}</textarea>
-                `;
-                container.appendChild(div);
-            });
+        function addChapter() {
+            let newId = Date.now();
+            appData.manuscript.push({ id: newId, title: `Chapter ${appData.manuscript.length + 1}`, content: "" });
+            selectChapter(newId);
+            triggerAutoSave();
         }
 
-        function addTimelineNode() {
-            if(!currentBook.timeline) currentBook.timeline = [];
-            currentBook.timeline.push({id: Date.now(), phase: "New Milestone", details: "Describe event..."});
-            renderTimeline();
+        function updateActiveChapterTitle() {
+            let ch = appData.manuscript.find(c => c.id === activeChapterId);
+            if (ch) {
+                ch.title = document.getElementById('active-chapter-title').value;
+                renderManuscriptSidebar();
+                triggerAutoSave();
+            }
         }
 
-        function updateTimelinePhase(id, val) {
-            let node = currentBook.timeline.find(n => n.id === id);
-            if(node) node.phase = val;
+        function updateActiveChapterContent() {
+            let ch = appData.manuscript.find(c => c.id === activeChapterId);
+            if (ch) {
+                ch.content = document.getElementById('active-chapter-text').value;
+                updateGlobalStats();
+                triggerAutoSave();
+            }
         }
 
-        function updateTimelineDetails(id, val) {
-            let node = currentBook.timeline.find(n => n.id === id);
-            if(node) node.details = val;
-        }
-
-        // CHARACTER ANALYTICS LOGIC
-        function renderAnalytics() {
-            let grid = document.getElementById('analytics-grid');
+        // Character Bible Logic
+        function renderCharacters() {
+            const grid = document.getElementById('characters-grid');
             grid.innerHTML = '';
-            if(!currentBook.characters) currentBook.characters = [];
-
-            currentBook.characters.forEach(char => {
+            appData.characters.forEach((char, index) => {
                 let card = document.createElement('div');
-                card.className = 'analytic-card';
+                card.className = 'card';
                 card.innerHTML = `
-                    <h4 style="font-family: 'Cinzel', serif; color: var(--accent);">${char.name || 'Unnamed'}</h4>
-                    <span style="font-size: 0.8rem; color: var(--text-muted);">Role: ${char.role || 'N/A'} | Archetype: ${char.archetype || 'Custom'}</span>
-                    <div style="font-size: 0.75rem; margin-top: 5px;">Significance / Power Index: ${char.power || 50}%</div>
-                    <div class="progress-bar"><div class="progress-fill" style="width: ${char.power || 50}%;"></div></div>
+                    <input type="text" placeholder="Character Name" value="${char.name || ''}" oninput="updateCharacter(${index}, 'name', this.value)">
+                    <input type="text" placeholder="Role (e.g., Protagonist, Villain)" value="${char.role || ''}" oninput="updateCharacter(${index}, 'role', this.value)">
+                    <textarea placeholder="Physical traits, backstory, arc..." oninput="updateCharacter(${index}, 'desc', this.value)">${char.desc || ''}</textarea>
+                    <div class="card-actions">
+                        <button class="btn-danger" onclick="deleteCharacter(${index})">Delete</button>
+                    </div>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        window.onload = () => {
-            renderSidebar();
-            loadEditor();
-        };
+        function addCharacter() {
+            appData.characters.push({ name: "", role: "", desc: "" });
+            renderCharacters();
+            triggerAutoSave();
+        }
+
+        function updateCharacter(index, field, value) {
+            appData.characters[index][field] = value;
+            triggerAutoSave();
+        }
+
+        function deleteCharacter(index) {
+            appData.characters.splice(index, 1);
+            renderCharacters();
+            triggerAutoSave();
+        }
+
+        // Plot Grid Logic
+        function renderPlot() {
+            const grid = document.getElementById('plot-grid');
+            grid.innerHTML = '';
+            appData.plot.forEach((node, index) => {
+                let card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <input type="text" placeholder="Plot Event / Scene Title" value="${node.title || ''}" oninput="updatePlot(${index}, 'title', this.value)">
+                    <textarea placeholder="Scene goal, conflict, and outcome..." oninput="updatePlot(${index}, 'desc', this.value)">${node.desc || ''}</textarea>
+                    <div class="card-actions">
+                        <button class="btn-danger" onclick="deletePlot(${index})">Delete</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function addPlotCard() {
+            appData.plot.push({ title: "", desc: "" });
+            renderPlot();
+            triggerAutoSave();
+        }
+
+        function updatePlot(index, field, value) {
+            appData.plot[index][field] = value;
+            triggerAutoSave();
+        }
+
+        function deletePlot(index) {
+            appData.plot.splice(index, 1);
+            renderPlot();
+            triggerAutoSave();
+        }
+
+        // Stats & Auto-Save Sync Engine
+        function updateGlobalStats() {
+            let totalWords = 0;
+            let totalChars = 0;
+            appData.manuscript.forEach(ch => {
+                if (ch.content) {
+                    let words = ch.content.trim() ? ch.content.trim().split(/\s+/).length : 0;
+                    totalWords += words;
+                    totalChars += ch.content.length;
+                }
+            });
+            document.getElementById('word-count').innerText = `Words: ${totalWords.toLocaleString()}`;
+            document.getElementById('char-count').innerText = `Characters: ${totalChars.toLocaleString()}`;
+        }
+
+        function triggerAutoSave() {
+            const status = document.getElementById('save-status');
+            status.innerText = "Saving...";
+            status.style.color = "#d69e2e";
+
+            appData.synopsis = document.getElementById('synopsis-text').value;
+
+            if (saveTimeout) clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(async () => {
+                try {
+                    let response = await fetch('/api/save_data', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(appData)
+                    });
+                    if (response.ok) {
+                        status.innerText = "Saved";
+                        status.style.color = "#38a169";
+                    } else {
+                        status.innerText = "Save Failed";
+                        status.style.color = "#e53e3e";
+                    }
+                } catch (err) {
+                    status.innerText = "Save Failed";
+                    status.style.color = "#e53e3e";
+                }
+            }, 800);
+        }
+
+        // Initialize application workspace
+        loadAppData();
     </script>
 </body>
 </html>
